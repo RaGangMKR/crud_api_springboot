@@ -8,6 +8,32 @@
     <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
+    <style>
+        @layer utilities {
+            @keyframes gradientChange {
+                0% {
+                    background-position: 0%
+                }
+
+                50% {
+                    background-position: 100%
+                }
+
+                100% {
+                    background-position: 0%
+                }
+            }
+
+            .gradient {
+                background: linear-gradient(90deg, blue, red);
+                background-size: 200% 200%;
+            }
+
+            .element-to-rotate {
+                animation: gradientChange 4s ease infinite;
+            }
+        }
+    </style>
 </head>
 <body class="bg-green-100">
 <div id="root" class="container mx-auto p-4"></div>
@@ -27,31 +53,50 @@
             setUsers(data);
         };
 
-        // Create or update user
         const handleSubmit = async (e) => {
             e.preventDefault();
-            const user = { name, email, phone };
-            if (editId) {
-                // Update user
-                await fetch(`http://localhost:8080/api/users/${editId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(user),
-                });
-                setEditId(null);
-            } else {
-                // Create user
-                await fetch('http://localhost:8080/api/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(user),
-                });
+
+            // Trim input and validate
+            if (!name.trim() || !email.trim() || !phone.trim()) {
+                alert("Please fill in all fields before submitting.");
+                return;
             }
-            setName('');
-            setEmail('');
-            setPhone('');
-            fetchUsers();
+
+            const user = { name, email, phone };
+
+            try {
+                if (editId) {
+                    // Update user
+                    await fetch(`http://localhost:8080/api/users/${editId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(user),
+                    });
+                    alert("User updated successfully!");
+                    setEditId(null);
+                } else {
+                    // Create user
+                    await fetch('http://localhost:8080/api/users', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(user),
+                    });
+                    alert("User added successfully!");
+                }
+
+                // Clear form
+                setName('');
+                setEmail('');
+                setPhone('');
+
+                // Refresh user list
+                fetchUsers();
+            } catch (error) {
+                console.error("Error submitting user:", error);
+                alert("Something went wrong. Please try again.");
+            }
         };
+
 
         // Edit user
         const handleEdit = (user) => {
@@ -74,15 +119,16 @@
         }, []);
 
         return (
-            <div className="container mx-auto">
+
+            <div className="container mx-auto ">
             <nav
-                className="h-[10vh] mb-5 flex justify-center items-center uppercase bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90% rounded-lg">
+                className="sticky top-0 h-[10vh] mb-5 flex justify-center items-center uppercase bg-gradient-to-r from-blue-500 to-red-500 text-white px-4 py-2 text-xl rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate rounded-lg">
                 <h1 className="text-3xl text-white font-bold text-center">User Management</h1>
             </nav>
                 <div className="grid grid-cols-3 gap-5">
                     {/* Form */}
-                    <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                    <div className="sticky top-[110px] bg-white p-8 rounded-2xl shadow-lg mb-8 max-h-[55vh]">
+                        <h2 className="text-2xl uppercase font-bold text-blue-700 mb-6 text-center bg-blue-100 rounded-lg py-5 px-6 mb-4">
                             {editId ? 'Edit User' : 'Add User'}
                         </h2>
                         <div className="space-y-5">
@@ -94,6 +140,7 @@
                                     onChange={(e) => setName(e.target.value)}
                                     className="mt-1 block w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-700 shadow-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-300 focus:ring-opacity-50 transition duration-200"
                                     placeholder="Enter name"
+                                    required
                                 />
                             </div>
                             <div>
@@ -104,6 +151,7 @@
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="mt-1 block w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-700 shadow-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-300 focus:ring-opacity-50 transition duration-200"
                                     placeholder="Enter email"
+                                    required
                                 />
                             </div>
                             <div>
@@ -112,13 +160,14 @@
                                     type="number"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    className="mt-1 block w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-700 shadow-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-300 focus:ring-opacity-50 transition duration-200"
+                                    className="mt-1 block w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-700 shadow-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-300 focus:ring-opacity-50 transition duration-200 mb-5"
                                     placeholder="Enter phone number"
+                                    required
                                 />
                             </div>
                             <button
                                 onClick={handleSubmit}
-                                className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 px-6 rounded-xl hover:from-purple-600 hover:to-indigo-700 transition duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                                className="w-full bg-gradient-to-r from-blue-500 to-red-500 text-white px-4 py-2 text-xl rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate rounded-xl"
                             >
                                 {editId ? 'Update User' : 'Add User'}
                             </button>
@@ -128,9 +177,9 @@
 
                     {/* User List */}
                     <div className="col-span-2 bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold mb-4">Users</h2>
+                        <h2 className="text-2xl text-center uppercase font-bold bg-blue-100 rounded-lg py-5 px-6 mb-4 text-blue-700" role="alert">Users</h2>
                         {users.length === 0 ? (
-                            <p className="text-gray-500">No users found.</p>
+                            <p className="text-gray-500 alert alert-warnning" role="alert">No users found.</p>
                         ) : (
                             <ul className="space-y-4">
                                 {users.map((user) => (
@@ -162,7 +211,7 @@
 
                 </div>
                 <footer
-                    className=" bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90% text-white md:flex md:items-center md:justify-between shadow rounded-lg p-4 md:p-6 xl:p-8 my-6 mx-4">
+                    className="bg-gradient-to-r from-blue-500 to-red-500 text-white px-4 py-2 text-xl rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate text-white md:flex md:items-center md:justify-between shadow rounded-lg p-4 md:p-6 xl:p-8 my-6 mx-4">
                     <ul className="flex items-center flex-wrap mb-6 md:mb-0">
                         <li><a href="#" className="text-sm font-normal hover:underline mr-4 md:mr-6">Terms
                             and conditions</a>
