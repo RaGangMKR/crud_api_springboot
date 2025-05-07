@@ -12,6 +12,7 @@ public class CrudapiApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(CrudapiApplication.class, args);
 	}
+//	Access front-end
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
